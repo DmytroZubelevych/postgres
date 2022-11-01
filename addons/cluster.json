@@ -41,7 +41,7 @@
     "cloudlets": 32
   },
   "requires": [
-    "proxysql"
+    "pgpool2"
   ],
   "extraNodes": {
     "nodeGroup": "proxy",
