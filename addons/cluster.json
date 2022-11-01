@@ -1,7 +1,10 @@
 {
-  "jps": "https://raw.githubusercontent.com/DmytroZubelevych/postgres/master/addons/auto-cluster.yaml",
-  "defaultState": false,
+  "convertable": false,
   "skipOnEnvInstall": true,
+  "jps": "https://raw.githubusercontent.com/DmytroZubelevych/postgres/master/addons/auto-cluster.yaml",
+  "description": "<h3>Primary-Secondary with Scalable Secondaries</h3>Pre-configured PostgreSQL database cluster with primary-secondary replication. New nodes are automatically added into the cluster as secondaries. <a href='https://jelastic.com/blog/postgresql-auto-clustering-master-slave-replication/'>Learn More</a><img width='217' height='168' src='https://raw.githubusercontent.com/jelastic/icons/master/postgres/jelastic/images/tip-cluster-ms.svg?sanitize=true'>",
+  "defaultState": true,
+  "required": false,
   "nodeGroupData": {
     "scalingMode": "STATELESS",
     "skipNodeEmails": true,
@@ -22,8 +25,6 @@
     ]
   },
   "validation": {
-    "minCount": 2,
-    "minCloudlets": 3,
     "scalingMode": "STATELESS",
     "rules": [
       {
@@ -37,27 +38,25 @@
       }
     ]
   },
-  "recommended": {
-    "cloudlets": 6
-  },
   "requires": [
     "pgpool2"
   ],
-  "extraNodes": [{
-    "nodeGroup": "proxy",
-    "nodeType": "pgpool2",
-    "flexibleCloudlets": 8,
-    "fixedCloudlets": 1,
-    "displayName": "Pgpool2",
-    "count": "${globals.pgpool2Count:0}",
-    "isClusterSupport": false,
-    "isDeploySupport": false,
-    "isClusterDependency": false,
-    "applyQuotas": true,
-    "validation": {
-       "minCount": 1,
-       "maxCount": 3
+  "extraNodes": [
+    {
+      "nodeGroup": "proxy",
+      "nodeType": "pgpool2",
+      "flexibleCloudlets": 8,
+      "fixedCloudlets": 1,
+      "displayName": "Pgpool2",
+      "count": "${globals.pgpool2Count:0}",
+      "isClusterSupport": false,
+      "isDeploySupport": false,
+      "isClusterDependency": false,
+      "applyQuotas": true,
+      "validation": {
+        "minCount": 1,
+        "maxCount": 3
+      }
     }
-  }],
-  "description": "<h3>Primary-Secondary with Scalable Secondaries</h3>Pre-configured PostgreSQL database cluster with primary-secondary replication. New nodes are automatically added into the cluster as secondaries. <a href='https://jelastic.com/blog/postgresql-auto-clustering-master-slave-replication/'>Learn More</a><img width='217' height='168' src='https://raw.githubusercontent.com/jelastic/icons/master/postgres/jelastic/images/tip-cluster-ms.svg?sanitize=true'>"
+  ]
 }
