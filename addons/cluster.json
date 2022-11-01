@@ -17,7 +17,7 @@
         "type": "toggle",
         "caption": "Pgpool2",
         "name": "is_pgpool2",
-        "value": false
+        "value": true
       }
     ]
   },
