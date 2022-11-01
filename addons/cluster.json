@@ -13,14 +13,14 @@
   },
   "settings": {
     "data": {
-      "is_pgpool2": true
+      "is_pgpool2": false
     },
     "fields": [
       {
         "type": "toggle",
         "caption": "Pgpool2",
         "name": "is_pgpool2",
-        "value": true
+        "value": false
       }
     ]
   },
