@@ -45,8 +45,6 @@
     {
       "nodeGroup": "proxy",
       "nodeType": "pgpool2",
-      "flexibleCloudlets": 8,
-      "fixedCloudlets": 1,
       "displayName": "Pgpool2",
       "count": "${globals.pgpool2Count:0}",
       "isClusterSupport": false,
