@@ -20,11 +20,19 @@ onAfterScaleOut[sqldb]:
   - forEach(nodes.sqldb):
      if (${@i.id} != ${nodes.sqldb.master.id}):
        cmd[${@i.id}]: jcm updateHbaConf ${globals.nodes_address} ${@i.address}
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - forEach(event.response.nodes):
+      - addPgNodesToPgPool:
+          pgaddress: ${@i.address}
 
 onAfterScaleIn[sqldb]:
   - getNodes
   - forEach(nodes.sqldb):
      cmd[${@i.id}]: jcm updateHbaConf ${globals.nodes_address} ${@i.address}
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - forEach(event.response.nodes):
+      - removePgNodesFromPgPool:
+          pgaddress: ${@i.address}
 
 onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
@@ -111,6 +119,11 @@ actions:
   addPgNodesToPgPool:
     - forEach(pgpoolnode:nodes.pgpool):
       - cmd[${@pgpoolnode.id}]: jcm addPgNodeToPgpool2Conf ${this.pgaddress} &>>/var/log/run.log
+        user: root
+        
+  removePgNodesFromPgPool:
+    - forEach(pgpoolnode:nodes.pgpool):
+      - cmd[${@pgpoolnode.id}]: jcm removePgNodeFromPgpool2Conf ${this.pgaddress} &>>/var/log/run.log
         user: root
 
 startPage: ${nodes.sqldb.master.url}
