@@ -111,6 +111,7 @@ actions:
   addPgNodesToPgPool:
     - forEach(pgpoolnode:nodes.pgpool):
       - cmd[${@pgpoolnode.id}]: jcm addPgNodeToPgpool2Conf ${this.pgaddress}
+        user: root
 
 startPage: ${nodes.sqldb.master.url}
 success: |
