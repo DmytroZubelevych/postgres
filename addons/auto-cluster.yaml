@@ -67,6 +67,8 @@ actions:
                 jcm updatePrimaryConnInfo &>> /var/log/run.log
                 jcm updateHbaConf ${globals.nodes_address} ${@i.address}
                 sudo jem service restart
+      - if ('${settings.is_pgpool2}' == 'true'):
+        - cmd[pgpool]: jcm cleanupNodesFromPgpool2Conf
     - else: 
       - setNodeDisplayName[${nodes.sqldb.master.id}]: Primary
       - initPrimary
@@ -79,10 +81,10 @@ actions:
           - cmd[${@i.id}]: |-
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
-      - if ('${settings.is_pgpool2}' == 'true'):
-        - forEach(nodes.sqldb):
-          - addPgNodesToPgPool:
-              pgaddress: ${@i.address}
+    - if ('${settings.is_pgpool2}' == 'true'):
+      - forEach(nodes.sqldb):
+        - addPgNodesToPgPool:
+            pgaddress: ${@i.address}
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
