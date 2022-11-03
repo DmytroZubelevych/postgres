@@ -46,8 +46,6 @@ onAfterMigrate:
 
 actions:
   init:
-    #- env.control.AddContainerEnvVars[sqldb]:
-    #    vars: {"KEY_PASS":"${fn.password}"}
     - if (${settings.clone:false} || ${this.update:false}):
       - cmd[${nodes.sqldb.master.id}]: jcm removeAllReplicaHosts
       - getPswd
@@ -58,7 +56,6 @@ actions:
                 jcm addReplicaHost ${@i.address} &>> /var/log/run.log
                 sudo jem service reload
             - cmd[${@i.id}]: |-
-                #jcm updateReplicaHost ${nodes.sqldb.master.address} &>> /var/log/run.log
                 jcm updatePrimaryConnInfo &>> /var/log/run.log
                 jcm updateHbaConf ${globals.nodes_address} ${@i.address}
                 sudo jem service restart
