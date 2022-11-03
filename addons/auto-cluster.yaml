@@ -71,6 +71,10 @@ actions:
           - cmd[${@i.id}]: |-
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
+      - if ('${settings.is_pgpool2}' == 'true'):
+        - forEach(nodes.sqldb):
+          - addPgNodesToPgPool:
+              pgaddress: ${@i.address}
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
@@ -104,6 +108,9 @@ actions:
       - setGlobals:
           nodes_address: ${response.nodes_address}
 
+  addPgNodesToPgPool:
+    - forEach(pgpoolnode:nodes.pgpool):
+      - cmd[${@pgpoolnode.id}]: jcm addPgNodeToPgpool2Conf ${this.pgaddress} &>> /var/log/run.log
 
 startPage: ${nodes.sqldb.master.url}
 success: |
@@ -114,5 +121,3 @@ success: |
   * [Database Replication with PostgreSQL](https://docs.jelastic.com/postgresql-database-replication/)
   * [Remote Access to PostgreSQL](https://docs.jelastic.com/remote-access-postgres/)
   * [Import and Export Dump to PostgreSQL](https://docs.jelastic.com/dump-postgres/)
-
-  
