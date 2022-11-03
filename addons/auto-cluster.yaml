@@ -110,7 +110,7 @@ actions:
 
   addPgNodesToPgPool:
     - forEach(pgpoolnode:nodes.pgpool):
-      - cmd[${@pgpoolnode.id}]: jcm addPgNodeToPgpool2Conf ${this.pgaddress} &>> /var/log/run.log
+      - cmd[${@pgpoolnode.id}]: jcm addPgNodeToPgpool2Conf ${this.pgaddress}
 
 startPage: ${nodes.sqldb.master.url}
 success: |
