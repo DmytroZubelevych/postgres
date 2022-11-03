@@ -64,11 +64,12 @@ actions:
                 jcm addReplicaHost ${@i.address} &>> /var/log/run.log
                 sudo jem service reload
             - cmd[${@i.id}]: |-
-                jcm updatePrimaryConnInfo &>> /var/log/run.log
+                jcm updatePrimaryConnInfo &>>/var/log/run.log
                 jcm updateHbaConf ${globals.nodes_address} ${@i.address}
                 sudo jem service restart
       - if ('${settings.is_pgpool2}' == 'true'):
-        - cmd[pgpool]: jcm cleanupNodesFromPgpool2Conf
+        - cmd[pgpool]: jcm cleanupNodesFromPgpool2Conf &>>/var/log/run.log
+          user: root
     - else: 
       - setNodeDisplayName[${nodes.sqldb.master.id}]: Primary
       - initPrimary
@@ -85,6 +86,8 @@ actions:
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
+    - if (nodes.nosqldb.length > 1):
+      - cmd[pgpool]: jcm enableWatchdog
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
