@@ -88,6 +88,12 @@ actions:
             pgaddress: ${@i.address}
     - if (nodes.nosqldb.length > 1):
       - cmd[pgpool]: jcm enableWatchdog
+      - forEach(pgpoolnode:nodes.pgpool):
+        - getPgPoolNodesCount
+        - setPgpoolNodeId:
+            pgPoolNode: ${@pgpoolnode.id}
+        - addWatchdogConfig:
+            pgpoolAddress: ${@pgpoolnode.address}
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
@@ -130,7 +136,20 @@ actions:
     - forEach(pgpoolnode:nodes.pgpool):
       - cmd[${@pgpoolnode.id}]: jcm removePgNodeFromPgpool2Conf ${this.pgaddress} &>>/var/log/run.log
         user: root
-
+        
+  getPgPoolNodesCount:
+    - cmd[${nodes.sqldb.master.id}]: grep '^wd_port[0-9]*' /etc/pgpool-II/pgpool.conf|wc -l
+    - setGlobals:
+        pgPoolCount: ${response.out}
+        
+  setPgpoolNodeId:
+    - cmd[${this.pgPoolNode}]: jcm setPgpoolNodeId ${globals.pgPoolCount}
+      user: root
+      
+  addWatchdogConfig:
+    - cmd[pgpool]: jcm addWatchdogConfig ${globals.pgPoolCount} ${this.pgpoolAddress}
+      user: root
+        
 startPage: ${nodes.sqldb.master.url}
 success: |
   **Admin Panel**: [${nodes.sqldb.master.url}](${nodes.sqldb.master.url})  
