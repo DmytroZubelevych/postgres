@@ -24,6 +24,8 @@
     ]
   },
   "validation": {
+    "minCount": 2,
+    "minCloudlets": 4,
     "scalingMode": "STATELESS",
     "rules": [
       {
@@ -48,6 +50,7 @@
       "isClusterSupport": false,
       "isDeploySupport": false,
       "isClusterDependency": false,
+      "scalingMode": "STATEFUL",
       "applyQuotas": true,
       "validation": {
         "minCount": 1,
