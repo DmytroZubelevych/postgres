@@ -159,7 +159,7 @@ actions:
       user: root
       
   addWatchdogConfig:
-    - cmd[pgpool]: jcm addWatchdogConfig ${globals.pgPoolCount} ${this.pgpoolAddress}
+    - cmd[pgpool]: let PGPOOLCOUNT='${globals.pgPoolCount}+1'; jcm addWatchdogConfig $PGPOOLCOUNT ${this.pgpoolAddress}
       user: root
         
 startPage: ${nodes.sqldb.master.url}
