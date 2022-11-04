@@ -24,6 +24,16 @@ onAfterScaleOut[sqldb]:
     - forEach(event.response.nodes):
       - addPgNodesToPgPool:
           pgaddress: ${@i.address}
+          
+onAfterScaleOut[pgpool]:
+  - cmd[pgpool]: jcm enableWatchdog
+    user: root
+  - forEach(pgpoolnode:event.response.nodes):
+    - getPgPoolNodesCount
+    - setPgpoolNodeId:
+        pgPoolNode: ${@pgpoolnode.id}
+    - addWatchdogConfig:
+        pgpoolAddress: ${@pgpoolnode.address}
 
 onAfterScaleIn[sqldb]:
   - getNodes
@@ -89,7 +99,7 @@ actions:
       - if (nodes.pgpool.length > 1):
         - cmd[pgpool]: jcm enableWatchdog
           user: root
-        - forEach(pgpoolnode:nodes.pgpool):
+        - forEach(pgpoolnode:event.response.nodes):
           - getPgPoolNodesCount
           - setPgpoolNodeId:
               pgPoolNode: ${@pgpoolnode.id}
