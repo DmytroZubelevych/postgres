@@ -150,7 +150,7 @@ actions:
         user: root
         
   getPgPoolNodesCount:
-    - cmd[${nodes.sqldb.master.id}]: grep '^wd_port[0-9]*' /etc/pgpool-II/pgpool.conf|wc -l
+    - cmd[${nodes.pgpool.master.id}]: grep '^wd_port[0-9]*' /etc/pgpool-II/pgpool.conf|wc -l
     - setGlobals:
         pgPoolCount: ${response.out}
         
