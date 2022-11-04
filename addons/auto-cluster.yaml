@@ -25,6 +25,11 @@ onAfterScaleOut[sqldb]:
       - addPgNodesToPgPool:
           pgaddress: ${@i.address}
           
+onBeforeScaleIn[pgpool]:
+  - forEach(pgpoolnode:event.response.nodes):
+    - removeWatchdogConfig:
+        pgpoolAddress: ${@pgpoolnode.address}
+          
 onAfterScaleOut[pgpool]:
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
@@ -161,6 +166,10 @@ actions:
   addWatchdogConfig:
     - cmd[pgpool]: let PGPOOLCOUNT='${globals.pgPoolCount}+1'; jcm addWatchdogConfig $PGPOOLCOUNT ${this.pgpoolAddress}
       user: root
+        
+  removeWatchdogConfig:
+    - cmd[pgpool]: jcm removeWatchdogConfig ${this.pgpoolAddress}
+      user: root        
         
 startPage: ${nodes.sqldb.master.url}
 success: |
