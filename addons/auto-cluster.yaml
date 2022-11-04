@@ -96,15 +96,14 @@ actions:
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
-#      - if (nodes.pgpool.length > 1):
-#        - cmd[pgpool]: jcm enableWatchdog
-#          user: root
-#        - forEach(pgpoolnode:event.response.nodes):
-#          - getPgPoolNodesCount
-#          - setPgpoolNodeId:
-#              pgPoolNode: ${@pgpoolnode.id}
-#          - addWatchdogConfig:
-#             pgpoolAddress: ${@pgpoolnode.address}
+        - cmd[pgpool]: jcm enableWatchdog
+          user: root
+        - forEach(pgpoolnode:event.response.nodes):
+          - getPgPoolNodesCount
+          - setPgpoolNodeId:
+              pgPoolNode: ${@pgpoolnode.id}
+          - addWatchdogConfig:
+             pgpoolAddress: ${@pgpoolnode.address}
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
