@@ -55,7 +55,8 @@ onAfterClone:
   - install: ${response.jps}
     envName: ${event.response.env.envName}    
     settings: 
-      nodeGroup: ${settings.nodeGroup}      
+      nodeGroup: ${settings.nodeGroup}    
+      is_pgpool2: ${settings.is_pgpool2}
       clone: true
 
 onBeforeMigrate:
