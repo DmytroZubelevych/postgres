@@ -119,7 +119,7 @@ actions:
           fi
         user: root
       - cmd[pgpool]: |-
-          pg_md5 --md5auth --username=pgpool ${settings.pgpoolintpass}
+          pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
           chown -R postgres:postgres /etc/pgpool-II
         user: root
       - forEach(nodes.sqldb):
