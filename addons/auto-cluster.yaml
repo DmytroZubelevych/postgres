@@ -7,8 +7,12 @@ name: PostgreSQL Primary-Secondary Auto-Cluster
 targetNodes: none
 nodeGroupAlias:
   ${settings.nodeGroup}: sqldb
+  postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
   
 onInstall: init
+
+globals: 
+  pgpoolintpass: ${settings.pgpoolintpass:[fn.password]}
 
 onAfterScaleOut[sqldb]:
   - getPswd
@@ -31,6 +35,11 @@ onBeforeScaleIn[pgpool]:
         pgpoolAddress: ${@pgpoolnode.address}
           
 onAfterScaleOut[pgpool]:
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - cmd[${event.response.nodes.join(id,)}]: |-
+        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}; fi;
+        psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
+      user: root
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
       user: root
@@ -54,7 +63,8 @@ onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
   - install: ${response.jps}
     envName: ${event.response.env.envName}    
-    settings: 
+    settings:
+      pgpoolintpass: ${settings.pgpoolintpass}
       nodeGroup: ${settings.nodeGroup}    
       is_pgpool2: ${settings.is_pgpool2}
       clone: true
@@ -100,6 +110,14 @@ actions:
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
     - if ('${settings.is_pgpool2}' == 'true'):
+      - cmd[sqldb]: |-
+          if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}; fi;
+          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
+        user: root
+      - cmd[pgpool]: |-
+          pg_md5 --md5auth --username=pgpool ${settings.pgpoolintpass}
+          chown -R postgres:postgres /etc/pgpool-II
+        user: root
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
