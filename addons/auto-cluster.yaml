@@ -7,12 +7,12 @@ name: PostgreSQL Primary-Secondary Auto-Cluster
 targetNodes: none
 nodeGroupAlias:
   ${settings.nodeGroup}: sqldb
-  postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
   
 onInstall: init
 
 globals: 
   pgpoolintpass: ${settings.pgpoolintpass:[fn.password]}
+  postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
 
 onAfterScaleOut[sqldb]:
   - getPswd
