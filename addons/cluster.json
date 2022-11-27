@@ -50,11 +50,11 @@
       "isClusterSupport": false,
       "isDeploySupport": false,
       "isClusterDependency": false,
-      "scalingMode": "STATEFUL",
       "applyQuotas": true,
       "validation": {
         "minCount": 1,
-        "maxCount": 3
+        "maxCount": 3,
+        "scalingMode": "STATEFUL"
       }
     }
   ]
