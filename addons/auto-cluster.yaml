@@ -41,7 +41,7 @@ onAfterScaleOut[pgpool]:
         if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
             sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
         fi
-        psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
+        psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
       user: root
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
@@ -118,7 +118,7 @@ actions:
           if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
               sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
           fi
-          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
+          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
         user: root
       - cmd[pgpool]: |-
           pg_md5 --md5auth --username=pgpool ${settings.pgpoolintpass}
