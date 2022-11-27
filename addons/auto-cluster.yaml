@@ -37,10 +37,7 @@ onBeforeScaleIn[pgpool]:
         pgpoolAddress: ${@pgpoolnode.address}
           
 onAfterScaleOut[pgpool]:
-  - cmd[pgpool]: |-
-      pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
-      chown -R postgres:postgres /etc/pgpool-II
-    user: root
+  - preparePgpoolNodes
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
       user: root
@@ -114,10 +111,7 @@ actions:
       - cmd[${nodes.sqldb.master.id}]: |-
           psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
       - adjustConfigs4PgpoolUser
-      - cmd[pgpool]: |-
-          pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
-          chown -R postgres:postgres /etc/pgpool-II
-        user: root
+      - preparePgpoolNodes
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
@@ -130,7 +124,13 @@ actions:
               pgPoolNode: ${@pgpoolnode.id}
           - addWatchdogConfig:
               pgpoolAddress: ${@pgpoolnode.address}
-  
+
+  preparePgpoolNodes:
+    - cmd[pgpool]: |-
+        pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
+        chown -R postgres:postgres /etc/pgpool-II
+      user: root
+
   adjustConfigs4PgpoolUser:
     - cmd[sqldb]: |-
         grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
