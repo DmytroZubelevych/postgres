@@ -37,7 +37,10 @@ onBeforeScaleIn[pgpool]:
 onAfterScaleOut[pgpool]:
   - if ('${settings.is_pgpool2}' == 'true'):
     - cmd[${event.response.nodes.join(id,)}]: |-
-        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}; fi;
+        source /etc/jelastic/metainf.conf
+        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
+            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
+        fi
         psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
       user: root
   - if (nodes.pgpool.length > 1):
@@ -111,7 +114,10 @@ actions:
              sudo jem service reload
     - if ('${settings.is_pgpool2}' == 'true'):
       - cmd[sqldb]: |-
-          if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}; fi;
+          source /etc/jelastic/metainf.conf
+          if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
+              sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
+          fi
           psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${settings.pgpoolintpass}';"
         user: root
       - cmd[pgpool]: |-
