@@ -16,13 +16,7 @@ globals:
 
 onAfterScaleOut[sqldb]:
   - if ('${settings.is_pgpool2}' == 'true'):
-    - cmd[${event.response.nodes.join(id,)}]: |-
-        grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
-        source /etc/jelastic/metainf.conf
-        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
-            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
-        fi
-      user: root
+    - adjustConfigs4PgpoolUser
   - getPswd
   - getNodes
   - forEach(event.response.nodes):
@@ -119,13 +113,7 @@ actions:
     - if ('${settings.is_pgpool2}' == 'true'):
       - cmd[${nodes.sqldb.master.id}]: |-
           psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
-      - cmd[sqldb]: |-
-          grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
-          source /etc/jelastic/metainf.conf;
-          if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
-              sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
-          fi
-        user: root
+      - adjustConfigs4PgpoolUser
       - cmd[pgpool]: |-
           pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
           chown -R postgres:postgres /etc/pgpool-II
@@ -142,6 +130,15 @@ actions:
               pgPoolNode: ${@pgpoolnode.id}
           - addWatchdogConfig:
               pgpoolAddress: ${@pgpoolnode.address}
+  
+  adjustConfigs4PgpoolUser:
+    - cmd[sqldb]: |-
+        grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
+        source /etc/jelastic/metainf.conf;
+        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
+            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
+        fi
+      user: root
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
