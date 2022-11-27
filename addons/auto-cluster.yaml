@@ -15,6 +15,13 @@ globals:
   postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
 
 onAfterScaleOut[sqldb]:
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - cmd[${event.response.nodes.join(id,)}]: |-
+        source /etc/jelastic/metainf.conf
+        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
+            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
+        fi
+      user: root
   - getPswd
   - getNodes
   - forEach(event.response.nodes):
@@ -35,13 +42,10 @@ onBeforeScaleIn[pgpool]:
         pgpoolAddress: ${@pgpoolnode.address}
           
 onAfterScaleOut[pgpool]:
-  - if ('${settings.is_pgpool2}' == 'true'):
-    - cmd[${event.response.nodes.join(id,)}]: |-
-        source /etc/jelastic/metainf.conf
-        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
-            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
-        fi
-      user: root
+  - cmd[pgpool]: |-
+      pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
+      chown -R postgres:postgres /etc/pgpool-II
+    user: root
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
       user: root
@@ -112,6 +116,8 @@ actions:
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
     - if ('${settings.is_pgpool2}' == 'true'):
+      - cmd[${nodes.sqldb.master.id}]: |-
+          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
       - cmd[sqldb]: |-
           source /etc/jelastic/metainf.conf
           if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
