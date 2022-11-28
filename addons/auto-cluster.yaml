@@ -10,7 +10,13 @@ nodeGroupAlias:
   
 onInstall: init
 
+globals: 
+  pgpoolintpass: ${settings.pgpoolintpass:[fn.password]}
+  postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
+
 onAfterScaleOut[sqldb]:
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - adjustConfigs4PgpoolUser
   - getPswd
   - getNodes
   - forEach(event.response.nodes):
@@ -31,6 +37,7 @@ onBeforeScaleIn[pgpool]:
         pgpoolAddress: ${@pgpoolnode.address}
           
 onAfterScaleOut[pgpool]:
+  - preparePgpoolNodes
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
       user: root
@@ -54,7 +61,8 @@ onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
   - install: ${response.jps}
     envName: ${event.response.env.envName}    
-    settings: 
+    settings:
+      pgpoolintpass: ${settings.pgpoolintpass}
       nodeGroup: ${settings.nodeGroup}    
       is_pgpool2: ${settings.is_pgpool2}
       clone: true
@@ -100,6 +108,10 @@ actions:
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
     - if ('${settings.is_pgpool2}' == 'true'):
+      - cmd[${nodes.sqldb.master.id}]: |-
+          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
+      - adjustConfigs4PgpoolUser
+      - preparePgpoolNodes
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
@@ -112,6 +124,21 @@ actions:
               pgPoolNode: ${@pgpoolnode.id}
           - addWatchdogConfig:
               pgpoolAddress: ${@pgpoolnode.address}
+
+  preparePgpoolNodes:
+    - cmd[pgpool]: |-
+        pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
+        chown -R postgres:postgres /etc/pgpool-II
+      user: root
+
+  adjustConfigs4PgpoolUser:
+    - cmd[sqldb]: |-
+        grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
+        source /etc/jelastic/metainf.conf;
+        if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
+            sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
+        fi
+      user: root
 
   initPrimary:
     - cmd[${nodes.sqldb.master.id}]: jcm initPrimary &>> /var/log/run.log
