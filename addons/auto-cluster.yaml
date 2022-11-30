@@ -38,6 +38,9 @@ onBeforeScaleIn[pgpool]:
           
 onAfterScaleOut[pgpool]:
   - preparePgpoolNodes
+  - forEach(pgpoolnode:event.response.nodes):
+     - generateAndTransferSSHKeys:
+         id: ${@pgpoolnode.id}  
   - if (nodes.pgpool.length > 1):
     - cmd[pgpool]: jcm enableWatchdog
       user: root
@@ -117,6 +120,8 @@ actions:
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
       - forEach(pgpoolnode:nodes.pgpool):
+        - generateAndTransferSSHKeys:
+            id: ${@pgpoolnode.id}
         - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
       - if (nodes.pgpool.length > 1):
         - cmd[pgpool]: jcm enableWatchdog
@@ -129,10 +134,16 @@ actions:
               pgpoolAddress: ${@pgpoolnode.address}
       - cmd[sqldb]: jem service restart
       - cmd[pgpool]: jem service restart
+      
+  generateAndTransferSSHKeys:
+    - cmd[${this.id}]: |-
+        echo -e "\n"|ssh-keygen -t rsa -N ""
+    - cmd[${this.id}]: |-
+        cat /var/lib/pgsql/.ssh/id_rsa.pub
+    - cmd[sqldb]: 
+        echo '${response.out}' >> /var/lib/pgsql/.ssh/authorized_keys'
 
   preparePgpoolNodes:
-    - cmd[pgpool]: |-
-        echo -e "\n"|ssh-keygen -t rsa -N ""
     - cmd[pgpool]: |-
         pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
         chown -R postgres:postgres /etc/pgpool-II
