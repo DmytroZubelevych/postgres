@@ -137,7 +137,7 @@ actions:
       
   generateAndTransferSSHKeys:
     - cmd[${this.id}]: |-
-        echo -e "\n"|ssh-keygen -t rsa -N ""
+        ssh-keygen -q -t rsa -N '' <<< $'\ny'
     - cmd[${this.id}]: |-
         cat /var/lib/pgsql/.ssh/id_rsa.pub
     - cmd[sqldb]: 
