@@ -128,6 +128,7 @@ actions:
   preparePgpoolNodes:
     - cmd[pgpool]: |-
         echo -e "\n"|ssh-keygen -t rsa -N ""
+    - cmd[pgpool]: |-
         pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
         chown -R postgres:postgres /etc/pgpool-II
       user: root
