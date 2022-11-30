@@ -213,7 +213,7 @@ actions:
         pgPoolCount: ${response.out}
         
   setPgpoolNodeId:
-    - cmd[${this.pgPoolNode}]: jcm setPgpoolNodeId ${globals.pgPoolCount}
+    - cmd[${this.pgPoolNode}]: let PGPOOLCOUNT='${globals.pgPoolCount}+1'; jcm setPgpoolNodeId $PGPOOLCOUNT
       user: root
       
   addWatchdogConfig:
