@@ -108,9 +108,9 @@ actions:
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
     - if ('${settings.is_pgpool2}' == 'true'):
+      - adjustConfigs4PgpoolUser
       - cmd[${nodes.sqldb.master.id}]: |-
           psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
-      - adjustConfigs4PgpoolUser
       - preparePgpoolNodes
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
@@ -127,6 +127,7 @@ actions:
 
   preparePgpoolNodes:
     - cmd[pgpool]: |-
+        echo -e "\n"|ssh-keygen -t rsa -N ""
         pg_md5 --md5auth --username=pgpool ${globals.pgpoolintpass}
         chown -R postgres:postgres /etc/pgpool-II
       user: root
