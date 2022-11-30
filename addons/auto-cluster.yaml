@@ -115,6 +115,8 @@ actions:
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
+      - forEach(pgpoolnode:nodes.pgpool):
+        - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
       - if (nodes.pgpool.length > 1):
         - cmd[pgpool]: jcm enableWatchdog
           user: root
@@ -124,6 +126,8 @@ actions:
               pgPoolNode: ${@pgpoolnode.id}
           - addWatchdogConfig:
               pgpoolAddress: ${@pgpoolnode.address}
+      - cmd[sqldb]: jem service restart
+      - cmd[pgpool]: jem service restart
 
   preparePgpoolNodes:
     - cmd[pgpool]: |-
@@ -136,7 +140,6 @@ actions:
   adjustConfigs4PgpoolUser:
     - cmd[sqldb]: |-
         jem service stop;
-        grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
         source /etc/jelastic/metainf.conf;
         if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
             sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
