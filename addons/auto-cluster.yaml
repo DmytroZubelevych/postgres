@@ -133,11 +133,19 @@ actions:
 
   adjustConfigs4PgpoolUser:
     - cmd[sqldb]: |-
+        jem service stop;
         grep -q pgpool /var/lib/pgsql/data/pg_hba.conf || sed -ci -e '1i host    all             pgpool          0.0.0.0/0         md5' /var/lib/pgsql/data/pg_hba.conf;
         source /etc/jelastic/metainf.conf;
         if [ "$COMPUTE_TYPE_VERSION" -ge "14" ] ; then
             sed -ci -e 's|#password_encryption.*|password_encryption = md5|' ${globals.postgresqlConf}
         fi
+        if [ "$COMPUTE_TYPE_VERSION" -ge "13" ] ; then
+            echo 'wal_keep_size = 1024' >> ${globals.postgresqlConf}
+        else
+            echo "wal_keep_segments = 128" >> ${globals.postgresqlConf}
+        fi
+        grep -q "^wal_log_hints" ${globals.postgresqlConf} || echo 'wal_log_hints = on' >> ${globals.postgresqlConf};
+        jem service start;
       user: root
 
   initPrimary:
