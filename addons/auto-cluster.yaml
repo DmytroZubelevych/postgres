@@ -36,7 +36,7 @@ onBeforeScaleIn[pgpool]:
     - removeWatchdogConfig:
         pgpoolAddress: ${@pgpoolnode.address}
     - cmd[sqldb]: sed -ci -e '/${@pgpoolnode.address}/d' /var/lib/pgsql/data/pg_hba.conf;
-  - cmd[sqldb]: jem service restart
+  - cmd[sqldb,pgpool]: jem service restart
           
 onAfterScaleOut[pgpool]:
   - preparePgpoolNodes
