@@ -50,6 +50,7 @@
       "isClusterSupport": false,
       "isDeploySupport": false,
       "isClusterDependency": false,
+      "isResetServicePassword": "NODEGROUP",
       "applyQuotas": true,
       "validation": {
         "minCount": 1,
