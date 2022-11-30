@@ -141,7 +141,7 @@ actions:
     - cmd[${this.id}]: |-
         cat /var/lib/pgsql/.ssh/id_rsa.pub
     - cmd[sqldb]: 
-        echo '${response.out}' >> /var/lib/pgsql/.ssh/authorized_keys'
+        echo '${response.out}' >> /var/lib/pgsql/.ssh/authorized_keys
 
   preparePgpoolNodes:
     - cmd[pgpool]: |-
