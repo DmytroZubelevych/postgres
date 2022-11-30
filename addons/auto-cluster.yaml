@@ -42,6 +42,7 @@ onAfterScaleOut[pgpool]:
     - cmd[pgpool]: jcm enableWatchdog
       user: root
     - forEach(pgpoolnode:event.response.nodes):
+      - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
       - getPgPoolNodesCount
       - setPgpoolNodeId:
           pgPoolNode: ${@pgpoolnode.id}
