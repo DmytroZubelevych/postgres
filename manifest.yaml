@@ -17,17 +17,25 @@ categories:
 
 settings:
   fields:
-    caption: Version
-    name: nodeType
-    type: list    
-    values: 
-      - value: postgres10
-        caption: PostgreSQL 10
-      - value: postgres11
-        caption: PostgreSQL 11
-      - value: postgres12
-        caption: PostgreSQL 12
-    default: postgres12
+    - caption: Version
+      name: nodeType
+      type: list    
+      values: 
+        - value: postgres10
+          caption: PostgreSQL 10
+        - value: postgres11
+          caption: PostgreSQL 11
+        - value: postgres12
+          caption: PostgreSQL 12
+        - value: postgres13
+          caption: PostgreSQL 13
+        - value: postgres14
+          caption: PostgreSQL 14
+      default: postgres12
+    - type: toggle
+      caption: Pgpool-II enabled
+      name: is_pgpool2
+      value: true
 
 nodes:
   cloudlets: 32
