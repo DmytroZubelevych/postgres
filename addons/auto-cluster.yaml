@@ -142,11 +142,11 @@ actions:
       
   generateAndTransferSSHKeys:
     - cmd[${this.id}]: |-
-        ssh-keygen -q -t rsa -N '' <<< $'\ny'
+        [ -f "/var/lib/pgsql/.ssh/id_rsa.pub" ] || ssh-keygen -q -t rsa -N '' <<< $'\ny'
     - cmd[${this.id}]: |-
         cat /var/lib/pgsql/.ssh/id_rsa.pub
     - cmd[sqldb]: 
-        echo '${response.out}' >> /var/lib/pgsql/.ssh/authorized_keys
+        grep -q '${response.out}' /var/lib/pgsql/.ssh/authorized_keys || echo '${response.out}' >> /var/lib/pgsql/.ssh/authorized_keys
 
   preparePgpoolNodes:
     - cmd[pgpool]: |-
