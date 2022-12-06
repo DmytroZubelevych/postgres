@@ -30,6 +30,9 @@ onAfterScaleOut[sqldb]:
     - forEach(event.response.nodes):
       - addPgNodesToPgPool:
           pgaddress: ${@i.address}
+    - forEach(pgpoolnode:nodes.pgpool):
+      - generateAndTransferSSHKeys:
+          id: ${@pgpoolnode.id}
           
 onBeforeScaleIn[pgpool]:
   - forEach(pgpoolnode:event.response.nodes):
