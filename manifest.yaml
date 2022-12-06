@@ -31,7 +31,7 @@ settings:
           caption: PostgreSQL 13
         - value: postgres14
           caption: PostgreSQL 14
-      default: postgres12
+      default: postgres14
     - type: toggle
       caption: Pgpool-II enabled
       name: is_pgpool2
@@ -43,8 +43,8 @@ nodes:
   scalingMode: STATELESS
   nodeType: ${settings.nodeType}
   password: ${fn.password}  
-  cluster: true
-  skipNodeEmails: true
+  cluster:
+    is_pgpool2: ${settings.is_pgpool2}
   
 startPage: ${nodes.sqldb.master.url}
 success: 
