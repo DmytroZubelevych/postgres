@@ -14,7 +14,14 @@ globals:
   pgpoolintpass: ${settings.pgpoolintpass:[fn.password]}
   postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
 
+onAfterResetServicePassword[sqldb]:
+  - copyPcpassFile
+
+onAfterResetNodePassword[sqldb]:
+  - copyPcpassFile
+
 onAfterScaleOut[sqldb]:
+  - copyPcpassFile
   - if ('${settings.is_pgpool2}' == 'true'):
     - adjustConfigs4PgpoolUser
   - getPswd
@@ -125,6 +132,7 @@ actions:
           - cmd[${@i.id}]: |-
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
+    - copyPcpassFile
     - if ('${settings.is_pgpool2}' == 'true'):
       - adjustConfigs4PgpoolUser
       - cmd[${nodes.sqldb.master.id}]: |-
@@ -148,7 +156,11 @@ actions:
               pgpoolAddress: ${@pgpoolnode.address}
       - cmd[sqldb]: jem service restart
       - cmd[pgpool]: jem service restart
-      
+  
+  copyPcpassFile:
+    - cmd[${nodes.sqldb.master.id}]: cat /var/lib/pgsql/.pgpass
+    - cmd[sqldb]: echo '${response.out}' > /var/lib/pgsql/.pgpass
+  
   generateAndTransferSSHKeys:
     - cmd[${this.id}]: |-
         [ -f "/var/lib/pgsql/.ssh/id_rsa.pub" ] || ssh-keygen -q -t rsa -N '' <<< $'\ny'
