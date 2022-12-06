@@ -43,6 +43,7 @@ onBeforeScaleIn[pgpool]:
           
 onAfterScaleOut[pgpool]:
   - preparePgpoolNodes
+  - cmd[${event.response.nodes.join(id,)}]: rm -f ~/.ssh/id_rsa ~/.ssh/id_rsa.pub
   - forEach(pgpoolnode:event.response.nodes):
      - generateAndTransferSSHKeys:
          id: ${@pgpoolnode.id}  
