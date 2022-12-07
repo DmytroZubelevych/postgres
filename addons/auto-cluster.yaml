@@ -55,17 +55,16 @@ onAfterScaleOut[pgpool]:
   - forEach(pgpoolnode:event.response.nodes):
      - generateAndTransferSSHKeys:
          id: ${@pgpoolnode.id}  
-  - if (nodes.pgpool.length > 1):
-    - cmd[pgpool]: jcm enableWatchdog
-      user: root
-    - forEach(pgpoolnode:event.response.nodes):
-      - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
-      - getPgPoolNodesCount
-      - setPgpoolNodeId:
-          pgPoolNode: ${@pgpoolnode.id}
-      - addWatchdogConfig:
-          pgpoolAddress: ${@pgpoolnode.address}
-    - addToKnownHosts
+  - cmd[pgpool]: jcm enableWatchdog
+    user: root
+  - forEach(pgpoolnode:event.response.nodes):
+    - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
+    - getPgPoolNodesCount
+    - setPgpoolNodeId:
+        pgPoolNode: ${@pgpoolnode.id}
+    - addWatchdogConfig:
+        pgpoolAddress: ${@pgpoolnode.address}
+  - addToKnownHosts
 
 onAfterScaleIn[sqldb]:
   - getNodes
