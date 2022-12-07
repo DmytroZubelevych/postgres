@@ -40,10 +40,7 @@ onAfterScaleOut[sqldb]:
     - forEach(pgpoolnode:nodes.pgpool):
       - generateAndTransferSSHKeys:
           id: ${@pgpoolnode.id}
-    - forEach(pgnode:nodes.sqldb):
-      - cmd[pgpool]: |-
-          ssh-keygen -R ${@pgnode.address}
-          ssh-keyscan ${@pgnode.address} 2>&1 1>> ~/.ssh/known_hosts
+    - addToKnownHosts
           
 onBeforeScaleIn[pgpool]:
   - forEach(pgpoolnode:event.response.nodes):
@@ -68,10 +65,7 @@ onAfterScaleOut[pgpool]:
           pgPoolNode: ${@pgpoolnode.id}
       - addWatchdogConfig:
           pgpoolAddress: ${@pgpoolnode.address}
-    - forEach(pgnode:nodes.sqldb):
-      - cmd[pgpool]: |-
-          ssh-keygen -R ${@pgnode.address}
-          ssh-keyscan ${@pgnode.address} 2>&1 1>> ~/.ssh/known_hosts
+    - addToKnownHosts
 
 onAfterScaleIn[sqldb]:
   - getNodes
@@ -161,6 +155,12 @@ actions:
     - else:
       - setGlobals:
           successPath: /text/success.md?_r=${fn.random}
+
+  addToKnownHosts:
+    - forEach(pgnode:nodes.sqldb):
+    - cmd[pgpool]: |-
+        ssh-keygen -R ${@pgnode.address}
+        ssh-keyscan ${@pgnode.address} 2>&1 1>> ~/.ssh/known_hosts
 
   copyPcpassFile:
     - cmd[${nodes.sqldb.master.id}]: cat /var/lib/pgsql/.pgpass
