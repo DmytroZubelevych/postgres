@@ -1,6 +1,6 @@
 **Admin Panel**: [${nodes.sqldb.master.url}](${nodes.sqldb.master.url})  
 **User**: webadmin  
-**Password**: ${nodes.sqldb.password}  
+**Password**: ${globals.pswd}  
 
 **You can connect to PostgreSQL cluster through the Pgpool-II leader node using the data below**:    
 
