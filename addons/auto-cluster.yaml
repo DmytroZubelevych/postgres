@@ -255,6 +255,6 @@ actions:
       user: root        
         
 startPage: ${nodes.sqldb.master.url}
-success: |
+success:
   email: ${globals.successPath}
   text: ${globals.successPath}
