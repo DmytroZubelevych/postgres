@@ -45,15 +45,16 @@ nodes:
   password: ${fn.password}  
   cluster:
     is_pgpool2: ${settings.is_pgpool2}
-  
+    
+onInstall:
+  - if ('${settings.is_pgpool2}' == 'true'):
+    - setGlobals:
+        successPath: /text/success-pgpool.md?_r=${fn.random}
+  - else:
+    - setGlobals:
+        successPath: /text/success.md?_r=${fn.random}
+
 startPage: ${nodes.sqldb.master.url}
 success: 
   email: false
-  text: |
-    **Admin Panel**: [${nodes.sqldb.master.url}](${nodes.sqldb.master.url})  
-    **User**: webadmin  
-    **Password**: ${nodes.sqldb.password}  
-
-    * [Database Replication with PostgreSQL](https://docs.jelastic.com/postgresql-database-replication/)
-    * [Remote Access to PostgreSQL](https://docs.jelastic.com/remote-access-postgres/)
-    * [Import and Export Dump to PostgreSQL](https://docs.jelastic.com/dump-postgres/)
+  text: ${globals.successPath}
