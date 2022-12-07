@@ -156,7 +156,12 @@ actions:
               pgpoolAddress: ${@pgpoolnode.address}
       - cmd[sqldb]: jem service restart
       - cmd[pgpool]: jem service restart
-  
+      - setGlobals:
+          successPath: /text/success-pgpool.md?_r=${fn.random}
+    - else:
+      - setGlobals:
+          successPath: /text/success.md?_r=${fn.random}
+
   copyPcpassFile:
     - cmd[${nodes.sqldb.master.id}]: cat /var/lib/pgsql/.pgpass
     - cmd[sqldb]: echo '${response.out}' > /var/lib/pgsql/.pgpass
@@ -251,10 +256,5 @@ actions:
         
 startPage: ${nodes.sqldb.master.url}
 success: |
-  **Admin Panel**: [${nodes.sqldb.master.url}](${nodes.sqldb.master.url})  
-  **User**: webadmin  
-  **Password**: ${globals.pswd}  
-
-  * [Database Replication with PostgreSQL](https://docs.jelastic.com/postgresql-database-replication/)
-  * [Remote Access to PostgreSQL](https://docs.jelastic.com/remote-access-postgres/)
-  * [Import and Export Dump to PostgreSQL](https://docs.jelastic.com/dump-postgres/)
+  email: ${globals.successPath}
+  text: ${globals.successPath}
