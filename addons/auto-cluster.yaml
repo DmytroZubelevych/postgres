@@ -138,15 +138,14 @@ actions:
         - generateAndTransferSSHKeys:
             id: ${@pgpoolnode.id}
         - cmd[sqldb]: sed -ci -e '1i host    all             pgpool          ${@pgpoolnode.address}/32         trust' /var/lib/pgsql/data/pg_hba.conf;
-      - if (nodes.pgpool.length > 1):
-        - cmd[pgpool]: jcm enableWatchdog
-          user: root
-        - forEach(pgpoolnode:nodes.pgpool):
-          - getPgPoolNodesCount
-          - setPgpoolNodeId:
-              pgPoolNode: ${@pgpoolnode.id}
-          - addWatchdogConfig:
-              pgpoolAddress: ${@pgpoolnode.address}
+      - cmd[pgpool]: jcm enableWatchdog
+        user: root
+      - forEach(pgpoolnode:nodes.pgpool):
+        - getPgPoolNodesCount
+        - setPgpoolNodeId:
+            pgPoolNode: ${@pgpoolnode.id}
+        - addWatchdogConfig:
+            pgpoolAddress: ${@pgpoolnode.address}        
       - cmd[sqldb]: jem service restart
       - cmd[pgpool]: jem service restart
       - cmd[${nodes.pgpool.master.id}]: cat /var/lib/pgsql/.pcppass |awk -F ':' '{print $4}'
