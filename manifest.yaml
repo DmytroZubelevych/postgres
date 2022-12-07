@@ -47,6 +47,9 @@ nodes:
     is_pgpool2: ${settings.is_pgpool2}
     
 onInstall:
+  - cmd[${nodes.sqldb.master.id}]: jcm getPswd
+  - setGlobals:
+      pswd: ${response.out}
   - if ('${settings.is_pgpool2}' == 'true'):
     - setGlobals:
         successPath: /text/success-pgpool.md?_r=${fn.random}
