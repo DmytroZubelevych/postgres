@@ -80,7 +80,10 @@ onAfterScaleIn[pgpool]:
     - cmd[pgpool]: jcm disableWatchdog
     - removeWatchdogConfig:
         pgpoolAddress: ${nodes.pgpool.master.address}
-    - cmd[pgpool]: rm -f /etc/pgpool-II/pgpool_node_id
+    - cmd[pgpool]: |-
+        rm -f /etc/pgpool-II/pgpool_node_id
+        sed -ci -e 's/use_watchdog/#use_watchdog/' /etc/pgpool-II/pgpool.conf 
+        jem service restart
 
 onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
