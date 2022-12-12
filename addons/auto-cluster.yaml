@@ -75,6 +75,12 @@ onAfterScaleIn[sqldb]:
       - removePgNodesFromPgPool:
           pgaddress: ${@i.address}
 
+onAfterScaleIn[pgpool]:
+  - if (nodes.pgpool.length == 1):
+    - cmd[pgpool]: jcm disableWatchdog
+    - removeWatchdogConfig:
+        pgpoolAddress: ${nodes.pgpool.master.address}
+
 onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
   - install: ${response.jps}
