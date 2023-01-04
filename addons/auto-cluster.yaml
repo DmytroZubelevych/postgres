@@ -273,6 +273,12 @@ actions:
   fixPgpassPermissions:
     - cmd[sqldb]: chmod 600 /var/lib/pgsql/.pgpass
       user: root
+      
+  addAppNameToConinfo:
+    - forEach(pgnode:nodes.sqldb):
+      - cmd[${nodes.pgpool.master.id}]: grep '^backend_hostname' /etc/pgpool-II/pgpool.conf |grep ${@pgpoolnode.address}|awk '{print $1}'|grep -o [09]*
+      - setGlobals:
+          pgNodeNumber: ${response.out}       
         
 startPage: ${nodes.sqldb.master.url}
 success:
