@@ -15,13 +15,13 @@ globals:
   postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
 
 onAfterResetServicePassword[sqldb]:
-  - copyPcpassFile
+  - copyPgpassFile
 
 onAfterResetNodePassword[sqldb]:
-  - copyPcpassFile
+  - copyPgpassFile
 
 onAfterScaleOut[sqldb]:
-  - copyPcpassFile
+  - copyPgpassFile
   - if ('${settings.is_pgpool2}' == 'true'):
     - adjustConfigs4PgpoolUser
   - getPswd
@@ -139,7 +139,7 @@ actions:
           - cmd[${@i.id}]: |-
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
-    - copyPcpassFile
+    - copyPgpassFile
     - if ('${settings.is_pgpool2}' == 'true'):
       - adjustConfigs4PgpoolUser
       - cmd[${nodes.sqldb.master.id}]: |-
@@ -179,7 +179,7 @@ actions:
         ssh-keygen -R ${@pgnode.address}
         ssh-keyscan ${@pgnode.address} 2>&1 1>> ~/.ssh/known_hosts
 
-  copyPcpassFile:
+  copyPgpassFile:
     - cmd[${nodes.sqldb.master.id}]: cat /var/lib/pgsql/.pgpass
     - cmd[sqldb]: echo '${response.out}' > /var/lib/pgsql/.pgpass
     - fixPgpassPermissions
