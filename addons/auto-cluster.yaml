@@ -182,6 +182,7 @@ actions:
   copyPcpassFile:
     - cmd[${nodes.sqldb.master.id}]: cat /var/lib/pgsql/.pgpass
     - cmd[sqldb]: echo '${response.out}' > /var/lib/pgsql/.pgpass
+    - fixPgpassPermissions
   
   generateAndTransferSSHKeys:
     - cmd[${this.id}]: |-
