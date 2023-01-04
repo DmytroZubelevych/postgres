@@ -286,7 +286,7 @@ actions:
     - cmd[${nodes.pgpool.master.id}]: grep '^backend_hostname' /etc/pgpool-II/pgpool.conf |grep ${this.address}|awk '{print $1}'|grep -o [[:digit:]].*
     - setGlobals:
         pgNodeNumber: ${response.out}
-    - cmd[${this.id}]: sed -ci -e "s/port=5432 user=replication'/port=5432 user=replication application_name=server${globals.pgNodeNumber}'/g" /var/lib/pgsql/data/postgresql.conf
+    - cmd[${this.id}]: sed -ci -e "s/port=5432 user=replication'/port=5432 user=replication application_name=server${globals.pgNodeNumber}'/g" ${globals.postgresqlConf}
         
 startPage: ${nodes.sqldb.master.url}
 success:
