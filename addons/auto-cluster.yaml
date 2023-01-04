@@ -111,7 +111,6 @@ onAfterMigrate:
 
 actions:
   init:
-    - fixPgpassPermissions
     - if (${settings.clone:false} || ${this.update:false}):
       - cmd[${nodes.sqldb.master.id}]: jcm removeAllReplicaHosts
       - getPswd
