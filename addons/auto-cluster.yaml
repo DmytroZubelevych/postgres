@@ -41,6 +41,10 @@ onAfterScaleOut[sqldb]:
       - generateAndTransferSSHKeys:
           id: ${@pgpoolnode.id}
     - addToKnownHosts
+    - forEach(event.response.nodes):
+      - addAppNameToConinfo:
+          id: ${@i.id}
+          address: ${@i.address}
           
 onBeforeScaleIn[pgpool]:
   - forEach(pgpoolnode:event.response.nodes):
@@ -67,10 +71,6 @@ onAfterScaleOut[pgpool]:
     - addWatchdogConfig:
         pgpoolAddress: ${@pgpoolnode.address}
   - addToKnownHosts
-  - forEach(event.response.nodes):
-    - addAppNameToConinfo:
-        id: ${@i.id}
-        address: ${@i.address}
   - fixPgpassPermissions
 
 onAfterScaleIn[sqldb]:
@@ -168,17 +168,16 @@ actions:
       - cmd[sqldb]: jem service restart
       - cmd[pgpool]: jem service restart
       - cmd[${nodes.pgpool.master.id}]: cat /var/lib/pgsql/.pcppass |awk -F ':' '{print $4}'
+      - forEach(nodes.sqldb):
+        - addAppNameToConinfo:
+            id: ${@i.id}
+            address: ${@i.address}
       - setGlobals:
           pgpoolPasswd: '${response.out}'
           successPath: /text/success-pgpool.md?_r=${fn.random}
     - else:
       - setGlobals:
           successPath: /text/success.md?_r=${fn.random}
-    - forEach(nodes.sqldb):
-      - addAppNameToConinfo:
-          id: ${@i.id}
-          address: ${@i.address}
-    - fixPgpassPermissions
 
   addToKnownHosts:
     - forEach(pgnode:nodes.sqldb):
