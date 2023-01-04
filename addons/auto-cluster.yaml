@@ -278,10 +278,10 @@ actions:
       
   addAppNameToConinfo:
     - forEach(pgnode:nodes.sqldb):
-      - cmd[${nodes.pgpool.master.id}]: grep '^backend_hostname' /etc/pgpool-II/pgpool.conf |grep ${@pgpoolnode.address}|awk '{print $1}'|grep -o [09]*
+      - cmd[${nodes.pgpool.master.id}]: grep '^backend_hostname' /etc/pgpool-II/pgpool.conf |grep ${@pgnode.address}|awk '{print $1}'|grep -o [09]*
       - setGlobals:
           pgNodeNumber: ${response.out}
-      - cmd[${@pgpoolnode.id}]: sed "s/port=5432 user=replication'/port=5432 user=replication application_name=server${globals.pgNodeNumber}'/g" /var/lib/pgsql/data/postgresql.conf
+      - cmd[${@pgpoolnode.id}]: sed -ci -e "s/port=5432 user=replication'/port=5432 user=replication application_name=server${globals.pgNodeNumber}'/g" /var/lib/pgsql/data/postgresql.conf
         
 startPage: ${nodes.sqldb.master.url}
 success:
