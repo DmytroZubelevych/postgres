@@ -46,7 +46,9 @@ onBeforeScaleIn[pgpool]:
   - forEach(pgpoolnode:event.response.nodes):
     - removeWatchdogConfig:
         pgpoolAddress: ${@pgpoolnode.address}
-    - cmd[sqldb]: sed -ci -e '/${@pgpoolnode.address}/d' /var/lib/pgsql/data/pg_hba.conf;
+    - cmd[sqldb]: |-
+        sed -ci -e '/${@pgpoolnode.address}/d' /var/lib/pgsql/data/pg_hba.conf;
+        sed -ci -e '/postgres@node${@pgpoolnode.id}-/d' /var/lib/pgsql/.ssh/authorized_keys;
   - cmd[sqldb,pgpool]: jem service restart
           
 onAfterScaleOut[pgpool]:
@@ -65,6 +67,7 @@ onAfterScaleOut[pgpool]:
     - addWatchdogConfig:
         pgpoolAddress: ${@pgpoolnode.address}
   - addToKnownHosts
+  - fixPgpassPermissions
 
 onAfterScaleIn[sqldb]:
   - getNodes
@@ -74,6 +77,7 @@ onAfterScaleIn[sqldb]:
     - forEach(event.response.nodes):
       - removePgNodesFromPgPool:
           pgaddress: ${@i.address}
+  - fixPgpassPermissions
 
 onAfterScaleIn[pgpool]:
   - if (nodes.pgpool.length == 1):
@@ -166,6 +170,7 @@ actions:
     - else:
       - setGlobals:
           successPath: /text/success.md?_r=${fn.random}
+    - fixPgpassPermissions
 
   addToKnownHosts:
     - forEach(pgnode:nodes.sqldb):
@@ -263,7 +268,11 @@ actions:
         
   removeWatchdogConfig:
     - cmd[pgpool]: jcm removeWatchdogConfig ${this.pgpoolAddress}
-      user: root        
+      user: root
+  
+  fixPgpassPermissions:
+    - cmd[sqldb]: chmod 600 /var/lib/pgsql/.pgpass
+      user: root
         
 startPage: ${nodes.sqldb.master.url}
 success:
