@@ -111,6 +111,7 @@ onAfterMigrate:
 
 actions:
   init:
+    - fixPgpassPermissions
     - if (${settings.clone:false} || ${this.update:false}):
       - cmd[${nodes.sqldb.master.id}]: jcm removeAllReplicaHosts
       - getPswd
@@ -170,6 +171,7 @@ actions:
     - else:
       - setGlobals:
           successPath: /text/success.md?_r=${fn.random}
+    - addAppNameToConinfo
     - fixPgpassPermissions
 
   addToKnownHosts:
