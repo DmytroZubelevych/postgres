@@ -68,7 +68,7 @@ onAfterScaleOut[pgpool]:
         pgpoolAddress: ${@pgpoolnode.address}
   - addToKnownHosts
   - forEach(event.response.nodes):
-    - addAppNameToConinfo
+    - addAppNameToConinfo:
         id: ${@i.id}
         address: ${@i.address}
   - fixPgpassPermissions
@@ -175,7 +175,7 @@ actions:
       - setGlobals:
           successPath: /text/success.md?_r=${fn.random}
     - forEach(nodes.sqldb):
-      - addAppNameToConinfo
+      - addAppNameToConinfo:
           id: ${@i.id}
           address: ${@i.address}
     - fixPgpassPermissions
