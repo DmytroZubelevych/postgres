@@ -1,6 +1,6 @@
 type: update
 id: postgres-master-slave-auto-cluster
-baseUrl: https://raw.githubusercontent.com/jelastic-jps/postgres/v2.0.0
+baseUrl: https://raw.githubusercontent.com/DmytroZubelevych/postgres/v2.0.0
 logo: /images/postgres-70x70.png
 name: PostgreSQL Primary-Secondary Auto-Cluster
 
@@ -14,9 +14,12 @@ globals:
   pgpoolintpass: ${settings.pgpoolintpass:[fn.password]}
   postgresqlConf: '/var/lib/pgsql/data/postgresql.conf'
   
-onAfterScaleIn[sqldb]:
-  - if (${nodes.sqldb.length:0}):
-    - script: delete MANIFEST.id;
+onBeforeRemoveNode [sqldb]:
+  if (nodes.sqldb.length == 1):
+    install:
+      type: update
+      name: PostgreSQL Primary-Secondary Auto-Cluster
+      id: postgres-master-slave-auto-cluster
 
 onAfterResetServicePassword[sqldb]:
   - copyPcpassFile
@@ -95,13 +98,14 @@ onAfterScaleIn[pgpool]:
 
 onAfterClone:
   - script: delete MANIFEST.id; return {result:0, jps:MANIFEST};
-  - install: ${response.jps}
-    envName: ${event.response.env.envName}    
-    settings:
-      pgpoolintpass: ${settings.pgpoolintpass}
-      nodeGroup: ${settings.nodeGroup}    
-      is_pgpool2: ${settings.is_pgpool2}
-      clone: true
+  - install:
+      jps: ${baseUrl}/addons/auto-cluster.yaml
+      envName: ${event.response.env.envName}
+      settings:
+        pgpoolintpass: ${settings.pgpoolintpass}
+        nodeGroup: ${settings.nodeGroup}    
+        is_pgpool2: ${settings.is_pgpool2}
+        clone: true
 
 onBeforeMigrate:
   if (${env.status} != 1):
@@ -143,12 +147,12 @@ actions:
           - cmd[${@i.id}]: |-
              jcm updateHbaConf ${globals.nodes_address} ${@i.address}
              sudo jem service reload
+      - if ('${settings.is_pgpool2}' == 'true'):
+        - adjustConfigs4PgpoolUser
+        - cmd[${nodes.sqldb.master.id}]: psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
+        - preparePgpoolNodes
     - copyPcpassFile
     - if ('${settings.is_pgpool2}' == 'true'):
-      - adjustConfigs4PgpoolUser
-      - cmd[${nodes.sqldb.master.id}]: |-
-          psql -U webadmin -d postgres -c "CREATE USER pgpool REPLICATION LOGIN CONNECTION LIMIT -1 ENCRYPTED PASSWORD '${globals.pgpoolintpass}';"
-      - preparePgpoolNodes
       - forEach(nodes.sqldb):
         - addPgNodesToPgPool:
             pgaddress: ${@i.address}
